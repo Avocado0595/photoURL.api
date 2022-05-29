@@ -7,7 +7,7 @@ function verifyToken(req, res, next){
         req.token = token;
         jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
             if (err) {
-                res.json(createResponse(false,err.message,null));
+                res.status(401).json(createResponse(false,err.message,null));
             }
             else {
                 req._id = decoded._id;
@@ -17,7 +17,7 @@ function verifyToken(req, res, next){
         });
     }
     else {
-        res.json(createResponse(false, 'Token not found.', null));
+        res.status(401).json(createResponse(false, 'Token not found.', null));
     }
 }
 

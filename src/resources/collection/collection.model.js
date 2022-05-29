@@ -11,7 +11,8 @@ const schema = new mongoose.Schema(
         userId:{
             type: mongoose.Schema.Types.ObjectId,
             minlength:3,
-            required: true
+            required: true,
+            ref: 'User'
         }
     },
     {timestamps: true}

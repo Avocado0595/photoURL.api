@@ -9,27 +9,38 @@ const schema = new mongoose.Schema(
         },
         photoName:{
             type: String,
+            required: true,
             maxlength: 255,
             minlength: 6,
-            index: {unique:true}
+            index: true
+        },
+        userName:{
+            type: String,
+            required: true,
+            minlength:8,
+        },
+        isPrivate:{
+            type:Boolean,
+            default: false,
+        },
+        likes:{
+            type: [mongoose.Schema.Types.ObjectId],
+            default:[],
+        },
+        views:{
+            type: Number,
+            min:0,
+            default:0
         },
         collectionId:{
             type: mongoose.Schema.Types.ObjectId,
-            default: 'unclassify',
-            minlength:6
-        },
-        authorId:{
-            type: [mongoose.Schema.Types.ObjectId],
-            minlength:3,
-            required: true
-        },
-        likeList:{
-            type: [mongoose.Schema.Types.ObjectId],
-            default:[]
+            ref: 'Collection'
         }
+        
     },
     {timestamps: true}
 );
 
+schema.index({photoName: 'text'});
 const photoModel = mongoose.model('Photo', schema, 'photo');
 export default photoModel;
