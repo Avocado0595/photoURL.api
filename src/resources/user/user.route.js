@@ -1,14 +1,16 @@
 import express from 'express';
 import UserController from './user.controller.js';
-import { verifyToken } from './user.middleware.js';
+import { deserializeUser } from './user.middleware.js';
 const router = express.Router();
 const userController = new UserController();
-router.post('/auth/signup', userController.createUser);
-router.post('/auth/login', userController.login);
-router.get('/auth/me',verifyToken, userController.getMyAccount);
-router.put('/auth/update',verifyToken, userController.updateUser);
-router.patch('/auth/change_password',verifyToken, userController.updatePassword);
 
-router.get('/:userName',verifyToken, userController.getUserByUserName);
+router.post('/signup', userController.createUser);
+router.post('/login', userController.login);
+
+router.get('/me',deserializeUser, userController.getMyAccount);
+router.put('/update',deserializeUser, userController.updateUser);
+router.patch('/change_password',deserializeUser, userController.updatePassword);
+
+router.get('/profile/:userName', userController.getUserByUserName);
 
 export default router;

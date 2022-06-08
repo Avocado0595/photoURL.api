@@ -1,17 +1,21 @@
 
 import UserModel from './user.model.js';
-import { comparePassword, hashPassword } from './user.helper.js';
+import { createToken, comparePassword, hashPassword } from './user.helper.js';
+import SessionService from '../session/session.service.js';
 
 export default class UserService{
-
+    sessionService = new SessionService();
     createUser = async ({userName, password}) =>{
         const hashedPassword = await hashPassword(password);
         const user = await new UserModel({userName, password: hashedPassword});
         if(!user){
             throw new Error('Fail to init new user.');
         }
+        const payload = {userId: user._id,userName: user.userName};
+        const token = createToken(payload);
+        await this.sessionService.createSession(payload);
         await user.save();
-        return {userName: user.userName, _id: user._id};
+        return {user:{userName: user.userName, userId: user._id}, ...token };
     }
     
     login = async (userName, password) =>{
@@ -22,7 +26,12 @@ export default class UserService{
         if(!isRightPassword){
             throw new Error('Password incorrect.');
         }
-        return {userName: user.userName, _id: user._id, displayName: user.displayName};
+        const payload = {userId: user._id,userName: user.userName};
+        const token = createToken(payload);
+        await this.sessionService.createSession(payload);
+        return {user:{
+            userName: user.userName, _id: user._id, 
+            displayName: user.displayName, avatarPath: user.avatarPath}, ...token};
     }
     
     getMyAccount = async (_id)=>{

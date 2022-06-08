@@ -1,24 +1,33 @@
-import jwt from 'jsonwebtoken';
-import createResponse from '../../utils/response.ulti.js';
 
-function verifyToken(req, res, next){
-    const token = req.headers['authorization'];
-    if (token) {
-        req.token = token;
-        jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-            if (err) {
-                res.status(401).json(createResponse(false,err.message,null));
-            }
-            else {
-                req._id = decoded._id;
-                req.userName = decoded.userName;
-                next();
-            }
-        });
+import SessionService from '../session/session.service.js';
+import { verifyToken, signToken} from './user.helper.js';
+async function deserializeUser(req, res, next){
+    const {accessToken, refreshToken} = req.cookies;
+    const {payload, expired} = verifyToken(accessToken, false);
+    
+    if(payload){
+        req.user = payload;
+        return next();
     }
-    else {
-        res.status(401).json(createResponse(false, 'Token not found.', null));
+    
+    const refresh = (expired&&refreshToken)? verifyToken(refreshToken, true):null;
+    if(!refresh)
+        return next();
+
+    const sessionService = new SessionService();
+    const session = await sessionService.getSession(refresh.payload.userId);
+    if (!session) {
+        return next();
     }
+
+    const newAccessToken = signToken(session,"5s");
+    res.cookie("accessToken", newAccessToken,{
+        maxAge: 300000,
+        httpOnly: true,
+        sameSite:"strict"
+    });
+    req.user = verifyToken(newAccessToken,false).payload;
+    return next();
 }
 
-export {verifyToken};
+export {deserializeUser};

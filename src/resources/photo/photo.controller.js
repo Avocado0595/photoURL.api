@@ -7,12 +7,11 @@ export default class photoController{
         this.photoService = new PhotoService();
     };
 
-    getUserPhotoById = async (req, res)=>{
+    getPhotoById = async (req, res)=>{
         try{
-            const userName=req.params.userName;
             const _id= req.params.photoId;
-            const photoList = await this.photoService.getUserPhotoById({userName,_id});
-            res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
+            const photo = await this.photoService.getPhotoById(_id);
+            res.status(201).json(createResponse(true, "Get photo successfully.", photo));
         }
         catch(err){
             res.status(400).json(createResponse(false, err.message, null))
@@ -22,10 +21,10 @@ export default class photoController{
     create = async (req, res) =>{    
         try{
             const {photoUrl, photoName,collectionId } = req.body;
-            const userName = req.userName;
+            const userId = req.user.userId;
             if(!photoUrl.match(urlPattern))
                 throw new Error('Invalid photo url.');
-            const photo = await this.photoService.createPhoto({photoUrl, photoName,collectionId,userName});
+            const photo = await this.photoService.createPhoto({photoUrl, photoName,collectionId,userId});
             res.status(201).json(createResponse(true,"Create new photo successfully.",photo));
         }
         catch(err){
@@ -57,7 +56,7 @@ export default class photoController{
     getUserPhotoList = async(req, res)=>{
         try{
             const userName = req.params.userName;
-            const photoList = await this.photoService.getPhotoList(userName);
+            const photoList = await this.photoService.getUserPhotoList(userName);
             res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
         }
         catch(err){
@@ -66,11 +65,11 @@ export default class photoController{
     }
     getPhotoList = async(req, res)=>{
         try{
-            let {page=1, limit=10, offset=10, search} = req.query
+            let {page=1, limit=10, skip=10, search} = req.query
             page = parseInt(page);
             limit = parseInt(limit);
-            offset = parseInt(offset);
-            const photoList = await this.photoService.getPhoto({page, limit, offset, search});
+            skip = parseInt(skip);
+            const photoList = await this.photoService.getPhotoList({page, limit, skip, search});
             res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
         }
         catch(err){

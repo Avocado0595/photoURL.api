@@ -36,30 +36,40 @@ export default class PhotoService{
             throw new Error(`Fail to delete photo id: ${_id}`);
         return photo;
     }
-    getPhotoList = async(userName)=>{
+    getUserPhotoList = async(userName)=>{
         const user = await userModel.findOne({userName});
         if(!user)
-            throw Error('User not found');
-        const photoList = await photoModel.find({userName});
+            throw Error(`User ${userName} not found`);
+        const photoList = await photoModel.find({userId: user.userId})
+                            .populate({path: 'collectionId',select: "_id collectionName"})
+                            .populate({path:'userId', select:"_id userName"});;
         if(!photoList)
             throw new Error(`Fail to find photo list of : ${userName}`);
         return photoList;
     }
     
-    getUserPhotoById = async({userName, _id})=>{
-        const photo = await photoModel.findOne({_id, userName});
+    getPhotoById = async( _id)=>{
+        const photo = await photoModel.findOne({_id})
+                    .populate({path: 'collectionId',select: "_id collectionName"})
+                    .populate({path:'userId', select:"_id userName"});
         if(!photo)
             throw new Error(`Fail to find photo id : ${_id}`);
         return photo;
     }
-    getPhoto = async({page, limit, offset, search})=>{
+    getPhotoList = async({page, limit, skip, search})=>{
         if(search){
-            console.log({page, limit, offset, search})
-            return await photoModel.find({$text: {$search: search}}).limit(limit).skip((page-1)*offset);
+            console.log({page, limit, skip, search})
+            return await photoModel.find({$text: {$search: search}})
+                    .populate({path: 'collectionId',select: "_id collectionName"})
+                    .populate({path:'userId', select:"_id userName"})
+                    .limit(limit).skip((page-1)*skip);
         }
         else{
-            console.log({page, limit, offset, search})
-            return await photoModel.find().limit(limit).skip((page-1)*offset);
+            console.log({page, limit, skip, search})
+            return await photoModel.find()
+                    .populate({path: 'collectionId',select: "_id collectionName"})
+                    .populate({path:'userId', select:"_id userName"})
+                    .limit(limit).skip((page-1)*skip);
         }
     }
 }

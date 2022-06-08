@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
+
 dotenv.config();
 const displayNamePattern = /^(.{6,125}$)/g;
 const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{6,16}$/g;
@@ -19,12 +20,29 @@ function checkDisplayName(displayName){
     if(!displayName || !displayName.match(displayNamePattern))
         throw new Error('Invalid display name');
 }
-function createToken(_id, userName){
-    return jwt.sign({_id, userName}, process.env.SECRET_KEY, { expiresIn: "24h" });
+function createToken(payload){
+    const accessToken= jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "5s" });
+    const refreshToken= jwt.sign(payload, process.env.SECRET_KEY_REFRESH, { expiresIn: "7d" });
+    return {accessToken, refreshToken};
 }
 
-const saltRounds = parseInt(process.env.SALT) || 9;
+function signToken(payload,expiresIn ){
+    const token = jwt.sign(payload, process.env.SECRET_KEY, {expiresIn});
+    return token;
+}
+
+function verifyToken(token, isRefresh){
+    try{
+        const decoded = jwt.verify(token, isRefresh?process.env.SECRET_KEY_REFRESH:process.env.SECRET_KEY);
+        return {payload: decoded, expired: false};
+    }
+    catch(err){
+        return {payload: null, expired: err.message}
+    }
+}
+
 async function hashPassword(password){
+    const saltRounds = parseInt(process.env.SALT) || 9;
     const salt = await bcrypt.genSalt(saltRounds);
     const hash = await bcrypt.hash(password,salt);
     if(!hash)
@@ -36,4 +54,4 @@ async function comparePassword(password, hashPassword){
     return await bcrypt.compare(password, hashPassword);
 }
 
-export {checkUsername, checkPassword, checkDisplayName, createToken,hashPassword, comparePassword};
+export {signToken, checkUsername, checkPassword, checkDisplayName, createToken,verifyToken,hashPassword, comparePassword};

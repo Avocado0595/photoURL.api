@@ -6,29 +6,32 @@ export default class UserController{
     constructor(){
         this.userService = new UserService();
     }
-
+    setCookie = (res,accessToken,refreshToken)=>{
+        res.cookie("accessToken",accessToken, {httpOnly: true, sameSite: 'strict', maxAge: 300000});
+        res.cookie("refreshToken", refreshToken, {httpOnly: true, sameSite: 'strict', maxAge: 24*60*7*10000});
+    }
     createUser = async  (req, res)=>{   
         try{
             const {userName, password} = req.body;
             checkUsername(userName);
             checkPassword(password);
-            const user = await this.userService.createUser({userName, password});
-            const token = createToken(user._id,user.userName)
-            res.status(201).json(createResponse(true,"Create new user successfully.",{user,token}));
+            const {user, accessToken, refreshToken}  = await this.userService.createUser({userName, password});
+            this.setCookie(res, accessToken, refreshToken);
+            res.status(201).json(createResponse(true,"Create new user successfully.",{user}));
         }
         catch(err){
             res.status(400).json(createResponse(false,err.message,null));
         }
     }
-    login = async (req, res)=> {    
-        
+
+    login = async (req, res)=> {        
         try{
             const {userName, password} = req.body;
             checkUsername(userName);
             checkPassword(password);
-            const user = await this.userService.login(userName, password);
-            const token = createToken(user._id, user.userName)
-            res.status(200).json(createResponse(true,"Login successfully.",{user,token}));
+            const {user, accessToken, refreshToken}  = await this.userService.login(userName, password);
+            this.setCookie(res, accessToken, refreshToken);
+            res.status(200).json(createResponse(true,"Login successfully.",{user}));
         }
         catch(err){
             res.status(400).json(createResponse(false,err.message,null));
@@ -70,10 +73,11 @@ export default class UserController{
     
     getMyAccount = async (req, res)=>{
         try{
-            const userId = req._id;
-            if(!userId)
+            const sessionUser = req.user;
+            console.log('controller: sessionUser:', sessionUser);
+            if(!sessionUser)
                 throw new Error('Invalid token.');
-            const user = await this.userService.getMyAccount(userId);
+            const user = await this.userService.getMyAccount(sessionUser.userId);
             res.status(200).json(createResponse(true, 'Get user successfully', {user}));
         }
         catch(err){

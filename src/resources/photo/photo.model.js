@@ -14,10 +14,10 @@ const schema = new mongoose.Schema(
             minlength: 6,
             index: true
         },
-        userName:{
-            type: String,
+        user:{
+            type: mongoose.Schema.Types.ObjectId,
             required: true,
-            minlength:8,
+            ref: 'User'
         },
         isPrivate:{
             type:Boolean,

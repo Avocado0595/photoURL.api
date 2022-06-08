@@ -8,9 +8,8 @@ const schema = new mongoose.Schema(
             index: {unique:true},
             unique: true
         },
-        userId:{
+        user:{
             type: mongoose.Schema.Types.ObjectId,
-            minlength:3,
             required: true,
             ref: 'User'
         }
