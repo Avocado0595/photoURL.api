@@ -25,7 +25,7 @@ export default class CollectionController{
             if(!collectionName)
                 throw new Error("Data update empty.");
             const oldCollection = await this.collectionService.getCollectionById(_id);
-            if(!req.user || oldCollection.user != req.user.userId)
+            if(!req.user || oldCollection.user._id != req.user.userId)
                 throw new Error("Invalid token."); 
             const collection = await this.collectionService.updateCollection(_id, collectionName)
             res.status(201).json(createResponse(true,"Update collection successfully.",{collection}));
@@ -48,6 +48,7 @@ export default class CollectionController{
     //GET '/user/:userId'
     getCollectionListByUser = async (req, res)=>{
         try{
+            console.log(req.ip);
             const userId = req.params.userId;
             const collectionList = await this.collectionService.getCollectionListByUser(userId)
             res.status(201).json(createResponse(true,"Get collection successfully.",{collectionList}));
@@ -64,10 +65,10 @@ export default class CollectionController{
             if(!_id)
                 throw new Error("Data update empty.");
             const delCollection = await this.collectionService.getCollectionById(_id);
-            if(delCollection.user != req.user.userId)
+            if(delCollection.user._id != req.user.userId)
                 throw new Error("Invalid token."); 
             const collection = await this.collectionService.deleteCollection(_id)
-            res.status(201).json(createResponse(true,"Update collection successfully.",{collection}));
+            res.status(201).json(createResponse(true,"Delete collection successfully.",{collection}));
         }
         catch(err){
             res.status(400).json(createResponse(false,err.message,null));

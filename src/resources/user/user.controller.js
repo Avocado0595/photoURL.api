@@ -1,20 +1,21 @@
 
-import { checkUsername, createToken, checkPassword, hashPassword, checkDisplayName } from './user.helper.js';
+import { Validate } from './user.helper.js';
 import createResponse from '../../utils/response.ulti.js';
 import UserService from './user.service.js';
 export default class UserController{
     constructor(){
         this.userService = new UserService();
+        this.validate = new Validate();
     }
     setCookie = (res,accessToken,refreshToken)=>{
         res.cookie("accessToken",accessToken, {httpOnly: true, sameSite: 'strict', maxAge: 300000});
         res.cookie("refreshToken", refreshToken, {httpOnly: true, sameSite: 'strict', maxAge: 24*60*7*10000});
     }
-    createUser = async  (req, res)=>{   
+    createUser = async(req, res)=>{   
         try{
             const {userName, password} = req.body;
-            checkUsername(userName);
-            checkPassword(password);
+            this.validate.checkUsername(userName);
+            this.validate.checkPassword(password);
             const {user, accessToken, refreshToken}  = await this.userService.createUser({userName, password});
             this.setCookie(res, accessToken, refreshToken);
             res.status(201).json(createResponse(true,"Create new user successfully.",{user}));
@@ -27,9 +28,9 @@ export default class UserController{
     login = async (req, res)=> {        
         try{
             const {userName, password} = req.body;
-            checkUsername(userName);
-            checkPassword(password);
-            const {user, accessToken, refreshToken}  = await this.userService.login(userName, password);
+            this.validate.checkUsername(userName);
+            this.validate.checkPassword(password);
+            const {user, accessToken, refreshToken}  = await this.userService.login({userName, password});
             this.setCookie(res, accessToken, refreshToken);
             res.status(200).json(createResponse(true,"Login successfully.",{user}));
         }
@@ -41,9 +42,9 @@ export default class UserController{
         try{
             const updateData = {...JSON.parse(JSON.stringify({displayName: req.body.displayName,avatarPath: req.body.avatarPath }))};
             if(updateData.hasOwnProperty('displayName')){
-                checkDisplayName(updateData.displayName);
+                this.validate.checkDisplayName(updateData.displayName);
             }
-            const userId =  req._id;
+            const userId =  req.user.userId;
             if(!userId)
                 throw new Error('Invalid token.');
             const updateUser = await this.userService.updateUser(userId, updateData);
@@ -57,13 +58,12 @@ export default class UserController{
         try{
             const newPassword = req.body.newPassword;
             const oldPassword = req.body.oldPassword;
-            checkPassword(newPassword);
-            checkPassword(oldPassword);
-            const userId =  req._id;
+            this.validate.checkPassword(newPassword);
+            this.validate.checkPassword(oldPassword);
+            const userId =  req.user.userId;
             if(!userId)
                 throw new Error('Invalid token.');
-            const hashNewPass = await hashPassword(newPassword);
-            const updateResult = await this.userService.updatePassword(userId,oldPassword, hashNewPass)
+            const updateResult = await this.userService.updatePassword(userId,oldPassword, newPassword)
             res.status(200).json(createResponse(true, 'Update password successfully', updateResult));
         }
         catch(err){

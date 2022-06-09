@@ -1,8 +1,8 @@
 import sessionModel from "./session.model.js";
 
 export default class SessionService{
-    getSession = async(userId)=>{
-        const session = await sessionModel.findOne({userId});
+    getSession = async(_id)=>{
+        const session = await sessionModel.findById(_id);
         if(!session)
             return null;
 
@@ -10,6 +10,9 @@ export default class SessionService{
     }
 
     createSession = async(payload)=>{
+        const existSession = await this.getSession(payload.sessionId);
+        if(existSession != null)
+            return existSession;
         const session = await new sessionModel(payload);
         await session.save();
         return session;

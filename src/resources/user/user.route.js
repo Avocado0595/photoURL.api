@@ -7,9 +7,9 @@ const userController = new UserController();
 router.post('/signup', userController.createUser);
 router.post('/login', userController.login);
 
-router.get('/me',deserializeUser, userController.getMyAccount);
-router.put('/update',deserializeUser, userController.updateUser);
-router.patch('/change_password',deserializeUser, userController.updatePassword);
+router.get('/me', userController.getMyAccount);
+router.put('/update', userController.updateUser);
+router.patch('/change-password', userController.updatePassword);
 
 router.get('/profile/:userName', userController.getUserByUserName);
 
