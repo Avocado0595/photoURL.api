@@ -13,10 +13,11 @@ export default class UserController{
     }
     createUser = async(req, res)=>{   
         try{
-            const {userName, password} = req.body;
+            const {userName, password, email} = req.body;
             this.validate.checkUsername(userName);
             this.validate.checkPassword(password);
-            const {user, accessToken, refreshToken}  = await this.userService.createUser({userName, password});
+            this.validate.checkEmail(email);
+            const {user, accessToken, refreshToken}  = await this.userService.createUser({userName, password, email});
             this.setCookie(res, accessToken, refreshToken);
             res.status(201).json(createResponse(true,"Create new user successfully.",{user}));
         }
@@ -37,6 +38,19 @@ export default class UserController{
         catch(err){
             res.status(400).json(createResponse(false,err.message,null));
         }
+    }
+    signout = async(req, res)=>{
+        try{
+            const userId =  req.user.userId;
+            if(!userId)
+                throw new Error('Invalid token.');
+            const result = await this.userService.signout(userId);
+            return res.status(200).json(createResponse(true,"Signout successfully.",{result}));
+        }
+        catch(err){
+            return res.status(400).json(createResponse(false,err.message,null))
+        }
+        
     }
     updateUser = async (req, res)=>{
         try{
@@ -74,7 +88,6 @@ export default class UserController{
     getMyAccount = async (req, res)=>{
         try{
             const sessionUser = req.user;
-            console.log('controller: sessionUser:', sessionUser);
             if(!sessionUser)
                 throw new Error('Invalid token.');
             const user = await this.userService.getMyAccount(sessionUser.userId);
@@ -92,6 +105,18 @@ export default class UserController{
                 throw new Error('Invalid userName.');
             const user = await this.userService.getUserByUserName(userName);
             res.status(200).json(createResponse(true, 'Get user successfully', {user}));
+        }
+        catch(err){
+            res.status(400).json(createResponse(false,err.message, null))
+        }
+    }
+    getNewPassword = async(req, res)=>{
+        try{
+            const {userName, email} = req.body;
+            if(!userName || !email)
+                throw new Error('Invalid userName or email.');
+            const result = await this.userService.getNewPassword({userName, email});
+            res.status(200).json(createResponse(true, 'Get new password successfully', {result}));
         }
         catch(err){
             res.status(400).json(createResponse(false,err.message, null))

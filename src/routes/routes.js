@@ -8,4 +8,4 @@ function route(rootUrl,app){
     app.use(`${rootUrl}/photos`, photoRouter);
 }
 
-export default route;//localhost:8080/user
+export default route;

@@ -55,8 +55,18 @@ export default class photoController{
     }
     getUserPhotoList = async(req, res)=>{
         try{
-            const userName = req.params.userName;
-            const photoList = await this.photoService.getUserPhotoList(userName);
+            const userId = req.params.userId;
+            const photoList = await this.photoService.getUserPhotoList(userId);
+            res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
+        }
+        catch(err){
+            res.status(400).json(createResponse(false, err.message, null))
+        }
+    }
+    getCollectionPhotoList = async(req, res)=>{
+        try{
+            const collectionId = req.params.collectionId;
+            const photoList = await this.photoService.getCollectionPhotoList(collectionId);
             res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
         }
         catch(err){
@@ -76,5 +86,40 @@ export default class photoController{
             res.status(400).json(createResponse(false, err.message, null))
         }
     }
+    update = async(req, res) =>{
+        try{
+            const photoId = req.params.photoId;
+            const { photoName,collectionId } = req.body;
+            const photo = await this.photoService.updatePhoto(photoId,{ photoName,collectionId });
+            res.status(201).json(createResponse(true, "Update photo successfully.", photo));
+        }
+        catch(err){
+            res.status(400).json(createResponse(false, err.message, null))
+        }
+    }
+    delete = async(req, res)=>{
+        try{
+            const photoId = req.params.photoId;
+            const photo = await this.photoService.deletePhoto(photoId);
+            res.status(201).json(createResponse(true, "Delete photo successfully.", photo));
+        }
+        catch(err){
+            res.status(400).json(createResponse(false, err.message, null))
+        }
+    }
+    like = async(req, res)=>{
+        try{
+            const user = req.user.userId;
+            if(!user)
+                throw new Error('Invalid user.')
+            const photoId = req.params.photoId;
+            const result = await this.photoService.like(user, photoId);
+            res.status(201).json(createResponse(true, "Liked.",result ));
+        }
+        catch(err){
+            res.status(400).json(createResponse(false, err.message, null))
+        }
+    }
+
 }
 

@@ -7,10 +7,10 @@ export default class CollectionController{
     create = async (req, res)=>{    
         try{
             const {collectionName} = req.body;
-            const user = req.user.userId;
+            const userId = req.user.userId;
             if(collectionName.trim().length >= 125 || collectionName.trim().length <1)
                 throw new Error('Invalid collection name.');
-            const collection = await this.collectionService.create({collectionName, user});
+            const collection = await this.collectionService.create({collectionName, userId});
             res.status(201).json(createResponse(true,"Create new collection successfully.",{collection}));
         }
         catch(err){
@@ -48,7 +48,6 @@ export default class CollectionController{
     //GET '/user/:userId'
     getCollectionListByUser = async (req, res)=>{
         try{
-            console.log(req.ip);
             const userId = req.params.userId;
             const collectionList = await this.collectionService.getCollectionListByUser(userId)
             res.status(201).json(createResponse(true,"Get collection successfully.",{collectionList}));

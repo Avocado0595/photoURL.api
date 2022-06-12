@@ -23,6 +23,7 @@ const schema = new mongoose.Schema(
         email:{
             type:String,
             minlength: 6,
+            require: true
         }
 
     },

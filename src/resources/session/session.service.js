@@ -18,4 +18,8 @@ export default class SessionService{
         return session;
     }
 
+    deleteSession =async(userId)=>{
+        return await sessionModel.findOneAndDelete({userId});
+    }
+
 }

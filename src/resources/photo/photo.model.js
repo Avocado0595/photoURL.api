@@ -14,7 +14,7 @@ const schema = new mongoose.Schema(
             minlength: 6,
             index: true
         },
-        user:{
+        userId:{
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'User'
@@ -26,8 +26,9 @@ const schema = new mongoose.Schema(
         likes:{
             type: [mongoose.Schema.Types.ObjectId],
             default:[],
+            ref:'User'
         },
-        views:{
+        likeCount:{
             type: Number,
             min:0,
             default:0
