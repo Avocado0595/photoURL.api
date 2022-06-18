@@ -7,7 +7,7 @@ export default class CollectionController{
     getCollectionById = async(req, res)=>{
         try{
             const _id = req.params._id;
-            const userId = req.user.userId;
+            const userId = req.user?.userId;
             const collection = await this.collectionService.getCollectionById(_id, userId);
             res.status(201).json(createResponse(true,"Get collection successfully.",{collection}));
         }
@@ -19,7 +19,7 @@ export default class CollectionController{
     getCollectionListByUser = async (req, res)=>{
         try{
             const userId = req.params.userId;
-            const authorId = req.user.userId;
+            const authorId = req.user?.userId;
             const collectionList = await this.collectionService.getCollectionListByUser(userId, authorId)
             res.status(201).json(createResponse(true,"Get collection successfully.",{collectionList}));
         }

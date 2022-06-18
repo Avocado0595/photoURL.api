@@ -1,7 +1,7 @@
 
 import SessionService from '../session/session.service.js';
 import { TokenHandle} from './user.helper.js';
-
+import createResponse from '../../utils/response.ulti.js';
 async function deserializeUser(req, res, next){
     const tokenHandle = new TokenHandle();
     const {accessToken, refreshToken} = req.cookies;
@@ -31,5 +31,9 @@ async function deserializeUser(req, res, next){
     req.user = tokenHandle.verifyToken(newAccessToken,false).payload;
     return next();
 }
-
-export {deserializeUser};
+async function requireUser(req, res, next){
+    if(!req.user)
+        return res.status(400).json(createResponse(false,'Unauthorize access.',null));
+    next();
+}
+export {deserializeUser, requireUser};

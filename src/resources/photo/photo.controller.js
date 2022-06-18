@@ -11,7 +11,7 @@ export default class photoController{
     getPhotoListByUser = async(req, res)=>{
         try{
             const userId = req.params.userId;
-            const authId = req.user.userId;
+            const authId = req.user?.userId;
             const photoList = await this.photoService.getPhotoListByUser(userId, authId);
             res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
         }
@@ -24,8 +24,8 @@ export default class photoController{
         try{
             const queryParams = getQueryParams(req);
             const collectionId = req.params.collectionId;
-            const userId = req.user.userId;
-            const photoList = await this.photoService.getCollectionPhotoList(collectionId, userId, queryParams);
+            const userId = req.user?.userId;
+            const photoList = await this.photoService.getPhotoListByCollection(collectionId, userId, queryParams);
             res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
         }
         catch(err){
@@ -36,7 +36,7 @@ export default class photoController{
     getPhotoById = async (req, res)=>{
         try{
             const _id= req.params.photoId;
-            const userId = req.user.userId;
+            const userId = req.user?.userId;
             const photo = await this.photoService.getPhotoById(_id, userId);
             res.status(201).json(createResponse(true, "Get photo successfully.", photo));
         }
@@ -48,7 +48,7 @@ export default class photoController{
     getPhotoList = async(req, res)=>{
         try{
             const queryParams = getQueryParams(req);
-            const userId = req.user.userId;
+            const userId = req.user?.userId;
             const photoList = await this.photoService.getPhotoList(userId,queryParams);
             res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
         }

@@ -29,8 +29,6 @@ export default class UserController{
     //DELETE /users/signout
     signout = async(req, res)=>{
         try{
-            if(!req.user)
-                throw new Error('Invalid session');
             const userId =  req.user.userId;
             if(!userId)
                 throw new Error('Invalid token.');
@@ -60,8 +58,6 @@ export default class UserController{
     //PUT /users/update
     updateUser = async (req, res)=>{
         try{
-            if(!req.user)
-                throw new Error('Invalid session');
             const userId =  req.user.userId;
             const updateData = {...JSON.parse(JSON.stringify({displayName: req.body.displayName,avatarPath: req.body.avatarPath }))};
             if(updateData.hasOwnProperty('displayName')){
@@ -77,8 +73,6 @@ export default class UserController{
     //PATCH /users/change-password
     updatePassword = async (req, res)=>{
         try{
-            if(!req.user)
-                throw new Error('Invalid session');
             const userId =  req.user.userId;
             const {newPassword,oldPassword} = req.body;
             this.validate.checkPassword(newPassword);
