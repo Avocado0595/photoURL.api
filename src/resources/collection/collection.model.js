@@ -5,13 +5,16 @@ const schema = new mongoose.Schema(
         collectionName:{
             type: String,
             require: true,
-            index: {unique:true},
             unique: true
         },
         userId:{
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'User'
+        },
+        isPrivate:{
+            type: Boolean,
+            default: false
         }
     },
     {timestamps: true}

@@ -1,22 +1,79 @@
 import request from 'supertest';
 import app from '../../index.js';
+import connectDb from '../../src/config/mongo.config.js';
 import userModel from '../../src/resources/user/user.model.js';
 describe("Test user path: api/user", () => {
-  beforeAll((done) => {
-    userModel.db.dropCollection();
-    done();
-});
-  test("POST /create ----> {_id, userName, token} ", done => {
+  
+  beforeAll(async() => {
+    await connectDb();
+    await userModel.deleteMany();
+  });
+  
+  test("signup new POST /signup ---> OK(200) ", done => {
     request(app)
-      .post("/api/user/create")
-      .send({userName:"thanhxuan1", password:"Th@nhXu@n1"})
+      .post("/api/users/signup")
+      .send({userName:"thanhxuan1", password:"Th@nhXu@n1", email: "avocadover222@gmail.com"})
       .then(response => {
         expect(response.statusCode).toBe(201);
         done();
       });
   });
 
+  test("signup duplicate POST /signup ---> ERR(400) ", done => {
+    request(app)
+      .post("/api/users/signup")
+      .send({userName:"thanhxuan1", password:"Th@nhXu@n1", email: "avocadover222@gmail.com"})
+      .then(response => {
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toContain('duplicate');
+        done();
+      });
+  });
+
+  test("signup invalid POST /signup ---> ERR(400) ", done => {
+    request(app)
+      .post("/api/users/signup")
+      .send({userName:"thanh@#@#@#xuan1", password:"123456", email: "avocadover222@gmail.com"})
+      .then(response => {
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toContain('Invalid');
+        done();
+      });
+  });
+
+
   
+  test("login invalid POST /login ---> ERR(400) ", done => {
+    request(app)
+      .post("/api/users/login")
+      .send({userName:"thanhxuan", password:"Th@nhXu@n1"})
+      .then(response => {
+        expect(response.statusCode).toBe(400);
+        done();
+      });
+  });
+
+  // test("login POST /login ---> OK(200) ", done => {
+  //   request(app)
+  //     .post("/api/users/login")
+  //     .send({userName:"thanhxuan1", password:"Th@nhXu@n1"})
+  //     .then(response => {
+  //       console.log(response.header['set-cookie']);
+  //       expect(response.statusCode).toBe(200);
+  //       done();
+  //     });
+  // });
+
+
+  // test("get my account GET /login ---> OK(200) ", done => {
+  //     request(app)
+  //       .post("/api/users/me")
+  //       .then(response => {
+  //         expect(response.statusCode).toBe(200);
+  //         done();
+  //       });
+  //   });
+
 });
 
 

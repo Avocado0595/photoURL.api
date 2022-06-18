@@ -1,5 +1,39 @@
 import collectionModel from './collection.model.js';
 export default class CollectionService{
+    getCollectionById = async(_id, userId)=>{
+        const collection = await collectionModel.findById(_id)
+                        .populate({path:'userId', select: '_id userName avatarPath'});
+        if(!collection)
+            throw new Error('Collection not found.');
+        if(!collection.isPrivate)
+        {
+            return collection;
+        }
+        if(collection.userId._id.toString() === userId){
+            return collection;
+        }
+        else{
+            throw new Error('Invalid access.')
+        }
+    }
+
+    getCollectionListByUser = async (userId, authorId)=>{
+        const rawCollectionList = await collectionModel.find({userId})
+                                .populate({path:'userId', select: '_id userName avatarPath'});
+        if(!rawCollectionList)
+            throw new Error(`Collection not found with userid: ${userId}`);
+        const collectionList = rawCollectionList.filter(c=>{
+            if(!c.isPrivate){
+                return true;
+            }
+            if(c.userId._id.toString() === authorId){
+                return true;
+            }
+            return false;
+        })
+        return collectionList;
+    }
+
     create = async(params)=> {
         const collection = await new collectionModel(params);
         if(!collection){
@@ -9,30 +43,15 @@ export default class CollectionService{
         return collection;
     }
     
-    getCollectionListByUser = async (userId)=>{
-        const collectionList = await collectionModel.find({userId})
-                                .populate({path:'userId', select: '_id userName avatarPath'});
-        if(!collectionList)
-            throw new Error('Not found collection with user');
-        return collectionList;
-    }
-    getCollectionById = async(_id)=>{
-        const collection = await collectionModel.findById(_id)
-                        .populate({path:'userId', select: '_id userName avatarPath'});;
-        if(!collection)
-            throw new Error('Collection not found for read.');
-        return collection;
-    }
-    
-    updateCollection = async(_id, collectionName)=>{
-        const collection = await collectionModel.findByIdAndUpdate(_id,{collectionName}, {new: true});
+    updateCollection = async(_id,userId, params)=>{
+        const collection = await collectionModel.findOneAndUpdate({_id, userId},{...params}, {new: true});
         if(!collection)
             throw new Error('Collection not found for update.');
         return collection;
     }
     
-    deleteCollection = async(_id)=>{
-        const delItem = await collectionModel.findByIdAndDelete(_id);
+    deleteCollection = async(_id, userId)=>{
+        const delItem = await collectionModel.findOneAndDelete({_id, userId});
         if(!delItem)
             throw new Error('Collection not found for delete.');
         return delItem;

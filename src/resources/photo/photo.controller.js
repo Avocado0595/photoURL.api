@@ -2,116 +2,103 @@
 import {urlPattern} from './photo.helper.js';
 import createResponse from '../../utils/response.ulti.js';
 import PhotoService from './photo.service.js';
+import { getQueryParams } from './photo.helper.js';
 export default class photoController{
     constructor(){
         this.photoService = new PhotoService();
     };
-
+    //GET /photos/user/:userId
+    getPhotoListByUser = async(req, res)=>{
+        try{
+            const userId = req.params.userId;
+            const authId = req.user.userId;
+            const photoList = await this.photoService.getPhotoListByUser(userId, authId);
+            res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
+        }
+        catch(err){
+            res.status(400).json(createResponse(false, err.message, null));
+        }
+    }
+    //GET /photos/collection/:collectionId
+    getPhotoListByCollection = async(req, res)=>{
+        try{
+            const queryParams = getQueryParams(req);
+            const collectionId = req.params.collectionId;
+            const userId = req.user.userId;
+            const photoList = await this.photoService.getCollectionPhotoList(collectionId, userId, queryParams);
+            res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
+        }
+        catch(err){
+            res.status(400).json(createResponse(false, err.message, null))
+        }
+    }
+    //GET /photos/:photoId
     getPhotoById = async (req, res)=>{
         try{
             const _id= req.params.photoId;
-            const photo = await this.photoService.getPhotoById(_id);
+            const userId = req.user.userId;
+            const photo = await this.photoService.getPhotoById(_id, userId);
             res.status(201).json(createResponse(true, "Get photo successfully.", photo));
         }
         catch(err){
             res.status(400).json(createResponse(false, err.message, null))
         }
     }
-
+    //GET /photos
+    getPhotoList = async(req, res)=>{
+        try{
+            const queryParams = getQueryParams(req);
+            const userId = req.user.userId;
+            const photoList = await this.photoService.getPhotoList(userId,queryParams);
+            res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
+        }
+        catch(err){
+            res.status(400).json(createResponse(false, err.message, null))
+        }
+    }
+    //POST /photos
     create = async (req, res) =>{    
         try{
-            const {photoUrl, photoName,collectionId } = req.body;
+            const {photoUrl, photoName,collectionId, isPrivate } = req.body;
             const userId = req.user.userId;
             if(!photoUrl.match(urlPattern))
                 throw new Error('Invalid photo url.');
-            const photo = await this.photoService.createPhoto({photoUrl, photoName,collectionId,userId});
+            const photo = await this.photoService.createPhoto({photoUrl, photoName,collectionId,userId, isPrivate});
             res.status(201).json(createResponse(true,"Create new photo successfully.",photo));
         }
         catch(err){
             res.status(400).json(createResponse(false,err.message,null));
         }
     }
-
-    getMyPhotoById = async(req,res)=>{
-        try{
-            const _id = req.params._id;
-            const photo = await this.photoService.getPhotoId(_id);
-            res.status(201).json(createResponse(true, "Get photo successfully.", photo));
-        }
-        catch(err){
-            res.status(400).json(createResponse(false, err.message, null))
-        }
-    }
-
-    getMyPhotoList = async(req, res)=>{
-        try{
-            const userName = req.userName;
-            const photoList = await this.photoService.getPhotoList(userName);
-            res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
-        }
-        catch(err){
-            res.status(400).json(createResponse(false, err.message, null))
-        }
-    }
-    getUserPhotoList = async(req, res)=>{
-        try{
-            const userId = req.params.userId;
-            const photoList = await this.photoService.getUserPhotoList(userId);
-            res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
-        }
-        catch(err){
-            res.status(400).json(createResponse(false, err.message, null))
-        }
-    }
-    getCollectionPhotoList = async(req, res)=>{
-        try{
-            const collectionId = req.params.collectionId;
-            const photoList = await this.photoService.getCollectionPhotoList(collectionId);
-            res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
-        }
-        catch(err){
-            res.status(400).json(createResponse(false, err.message, null))
-        }
-    }
-    getPhotoList = async(req, res)=>{
-        try{
-            let {page=1, limit=10, skip=10, search} = req.query
-            page = parseInt(page);
-            limit = parseInt(limit);
-            skip = parseInt(skip);
-            const photoList = await this.photoService.getPhotoList({page, limit, skip, search});
-            res.status(201).json(createResponse(true, "Get list photo successfully.", photoList));
-        }
-        catch(err){
-            res.status(400).json(createResponse(false, err.message, null))
-        }
-    }
+    //POST /:photoId
     update = async(req, res) =>{
         try{
             const photoId = req.params.photoId;
-            const { photoName,collectionId } = req.body;
-            const photo = await this.photoService.updatePhoto(photoId,{ photoName,collectionId });
+            const userId = req.user.userId;
+            const {photoName,collectionId, isPrivate} = req.body;
+            const photo = await this.photoService.updatePhoto(photoId, userId,{ photoName,collectionId, isPrivate });
             res.status(201).json(createResponse(true, "Update photo successfully.", photo));
         }
         catch(err){
             res.status(400).json(createResponse(false, err.message, null))
         }
     }
+    //DELETE /:photoId
     delete = async(req, res)=>{
         try{
             const photoId = req.params.photoId;
-            const photo = await this.photoService.deletePhoto(photoId);
+            const userId = req.user.userId;
+            const photo = await this.photoService.deletePhoto(photoId, userId);
             res.status(201).json(createResponse(true, "Delete photo successfully.", photo));
         }
         catch(err){
             res.status(400).json(createResponse(false, err.message, null))
         }
     }
+    //PATCH /photo/:photoId/like
     like = async(req, res)=>{
         try{
             const user = req.user.userId;
-            if(!user)
-                throw new Error('Invalid user.')
             const photoId = req.params.photoId;
             const result = await this.photoService.like(user, photoId);
             res.status(201).json(createResponse(true, "Liked.",result ));

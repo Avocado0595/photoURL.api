@@ -5,7 +5,6 @@ export default class SessionService{
         const session = await sessionModel.findById(_id);
         if(!session)
             return null;
-
         return {userId: session.userId, userName: session.userName};
     }
 

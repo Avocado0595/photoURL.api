@@ -27,7 +27,6 @@ export default class UserService{
         await user.save();
         return {user:{userName: user.userName, userId: user._id, email: user.email}, accessToken, refreshToken };
     }
-    
     login = async ({userName, password}) =>{
         const user = await UserModel.findOne({userName: userName});
         if(!user)
@@ -42,14 +41,13 @@ export default class UserService{
             displayName: user.displayName, avatarPath: user.avatarPath}, accessToken, refreshToken};
     }
     signout = async(userId)=>{
-        const result = this.sessionService.deleteSession(userId);
+        await this.sessionService.deleteSession(userId);
         return {result: 'ok'}
     }
     getNewPassword = async ({userName, email}) =>{
         const user = await UserModel.findOne({userName,email});
         if(!user)
             throw new Error('User or Email not found.');
-        
             var transporter =  nodemailer.createTransport({ // config mail server
                 service: 'Gmail',
                 auth: {
@@ -61,29 +59,26 @@ export default class UserService{
                 length: 8,
                 numbers: true
             });
-            var mainOptions = { // thiết lập đối tượng, nội dung gửi mail
+            var mainOptions = {
                 from: process.env.SERVER_EMAIL,
                 to: email,
                 subject: 'Revovery your password in PhotoUrl',
-                html: '<h3>You have got a new message from PhotoUrl.</h3><ul><li>Username:' + userName + '</li><li>Email: ' + email + '</li><li>New password:' + newPass + '</li></ul><p>Please use this password to login and change your own password!</p>'
+                html: '<h3>You have got a new message from PhotoUrl.</h3><ul><li>Username:' + userName + '</li><li>Email: ' + email + '</li><li>New password: ' +'<b>'+ newPass +'</b>' + '</li></ul><p>Please use this password to login and change your own password!</p>'
             }
-            transporter.sendMail(mainOptions, function(err, info){
+            transporter.sendMail(mainOptions, async function(err, info){
                 if (err) {
-                    console.log(err);
+                    throw new Error(err);
                 } else {
                     console.log('Message sent: ' +  info.response);
+                    const hashedPassword = await this.passwordHandle.hashPassword(newPass);
+                    await UserModel.findByIdAndUpdate(user._id, {password: hashedPassword},  {new: true});
                 }
             });
+            
             return {result: 'ok'};
     }
-    getMyAccount = async (_id)=>{
+    getUser = async (_id)=>{
         const user = await UserModel.findById(_id);
-        if(!user)
-            throw new Error('User not found.');
-        return {_id,userName: user.userName, displayName: user.displayName, avatarPath: user.avatarPath, email: user.email};
-    }
-    getUserByUserName = async (userName)=>{
-        const user = await UserModel.findOne({userName});
         if(!user)
             throw new Error('User not found.');
         return {_id:user._id,userName: user.userName, displayName: user.displayName, avatarPath: user.avatarPath, email: user.email};
@@ -94,7 +89,6 @@ export default class UserService{
             throw new Error('User not found.');
         return {userName: updateUser.userName, _id: updateUser._id, displayName: updateUser.displayName};
     }
-    
     updatePassword = async (_id,password, newPassword)=>{
         const user = await UserModel.findById(_id);
         const isRightPassword = await this.passwordHandle.comparePassword(password, user.password);

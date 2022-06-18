@@ -1,83 +1,92 @@
 import photoModel from "./photo.model.js";
-import userModel from "../user/user.model.js";
 import collectionModel from "../collection/collection.model.js";
+import CollectionService from "../collection/collection.service.js";
 export default class PhotoService{
-    createPhoto = async (params)=>{
-        const newphoto = await new photoModel(params);
+    collectionService = new CollectionService();
+
+    getPhotoListByUser = async(userId, authId)=>{
+        const rawPhotoList = await photoModel.find({userId})
+                            .populate({path: 'collectionId',select: "_id collectionName"})
+                            .populate({path:'userId', select:"_id userName"});
+        if(!rawPhotoList)
+            throw new Error(`Fail to find photos of user id: ${userId}`);
+        const photoList = rawPhotoList.filter(p=>{
+            if(!p.isPrivate) return true;
+            if(p.userId._id.toString()===authId) return true;
+            return false;
+        })
+        return photoList;
+    }
+
+    getPhotoListByCollection = async(collectionId, userId, {page, limit, skip})=>{
+        await this.collectionService.getCollectionById(collectionId, userId);
+        const photoList = await photoModel.find({collectionId})
+                            .populate({path: 'collectionId',select: "_id collectionName"})
+                            .populate({path:'userId', select:"_id userName"})
+                            .limit(limit).skip((page-1)*skip);
+        if(!photoList)
+            throw new Error(`Fail to find photos of collection id: ${collectionId}`);
+        return photoList;
+    }
+
+    getPhotoById = async(_id, userId)=>{
+        const photo = await photoModel.findById(_id)
+                    .populate({path: 'collectionId',select: "_id collectionName"})
+                    .populate({path:'userId', select:"_id userName"})
+        if(!photo)
+            throw new Error(`Fail to find photo id : ${_id}.`);
+        if(!photo.isPrivate)
+            return photo;
+        if(photo.userId._id.toString() !== userId){
+            throw new Error('Invalid access.');
+        }
+        return photo;
+    }
+
+    getPhotoList = async(userId,{page, limit, skip, search})=>{
+        const searchParams = search&&{$text: {$search: search}};
+        const rawPhotoList = await photoModel.find({...searchParams})
+                    .populate({path: 'collectionId',select: "_id collectionName"})
+                    .populate({path:'userId', select:"_id userName"})
+                    .limit(limit).skip((page-1)*skip);
+        const photoList = rawPhotoList.filter(p=>{
+            if(!p.isPrivate)
+                return true;
+            if(p.userId._id.toString() === userId)
+                return true;
+            return false;
+        });
+        return photoList;
+    }
+
+    createPhoto = async ({photoUrl, photoName,collectionId,userId, isPrivate})=>{
+        const collection = await collectionModel.findOne({_id:collectionId,userId});
+        const newphoto = await new photoModel({photoUrl, photoName,collectionId,userId, isPrivate: (collection&&collection.isPrivate)?true:isPrivate});
         if(!newphoto){
             throw new Error('Fail to add new photo.');
         }
         await newphoto.save();
         return newphoto;
     }
-    
-    getPhotoId = async (_id)=>{
-        const photo = await photoModel.findOne({_id})
-        if(!photo)
-            throw new Error(`Fail to get photo id: ${_id}`);
-        return photo;
-    }
-    
-    updatePhoto = async (_id,params)=>{
-        const photo = await photoModel.findByIdAndUpdate(_id, params, {new: true});
+
+    updatePhoto = async (_id, userId,params)=>{
+        const photo = await photoModel.findOneAndUpdate({_id, userId}, params, {new: true});
         if(!photo)
             throw new Error(`Fail to update photo id: ${_id}`);
         return photo;
     }
-    
-    deletePhoto = async (_id)=>{
-        const photo = await photoModel.findByIdAndDelete(_id);
+
+    deletePhoto = async (_id, userId)=>{
+        const photo = await photoModel.findByIdAndDelete({_id, userId});
         if(!photo)
             throw new Error(`Fail to delete photo id: ${_id}`);
         return photo;
     }
-    getUserPhotoList = async(userId)=>{
-        const user = await userModel.findById(userId);
-        if(!user)
-            throw Error(`User ${userId} not found`);
-        const photoList = await photoModel.find({userId})
-                            .populate({path: 'collectionId',select: "_id collectionName"})
-        if(!photoList)
-            throw new Error(`Fail to find photos of user id: ${userId}`);
-        return photoList;
-    }
-    getCollectionPhotoList = async(collectionId)=>{
-        const collection = await collectionModel.findById(collectionId);
-        if(!collection)
-            throw Error(`User ${collectionId} not found`);
-        const photoList = await photoModel.find({collectionId})
-                            .populate({path:'userId', select:"_id userName"});;
-        if(!photoList)
-            throw new Error(`Fail to find photos of collection id: ${collectionId}`);
-        return photoList;
-    }
-    getPhotoById = async(_id)=>{
-        const photo = await photoModel.findById(_id)
-                    .populate({path: 'collectionId',select: "_id collectionName"})
-                    .populate({path:'userId', select:"_id userName"});
-        if(!photo)
-            throw new Error(`Fail to find photo id : ${_id}`);
-        return photo;
-    }
-    getPhotoList = async({page, limit, skip, search})=>{
-        if(search){
-            return await photoModel.find({$text: {$search: search}})
-                    .populate({path: 'collectionId',select: "_id collectionName"})
-                    .populate({path:'userId', select:"_id userName"})
-                    .limit(limit).skip((page-1)*skip);
-        }
-        else{
-            return await photoModel.find()
-                    .populate({path: 'collectionId',select: "_id collectionName"})
-                    .populate({path:'userId', select:"_id userName"})
-                    .limit(limit).skip((page-1)*skip);
-        }
-    }
+
     like = async(userId, photoId)=>{
-        const user = await userModel.findById(userId);
-        if(!user)
-            throw new Error('User not found.')
-        const liked = await photoModel.findOne({_id: photoId,likes : user._id})
+        const liked = await photoModel.findOne({_id: photoId,likes : userId});
+        if(liked.isPrivate && liked.userId !== userId)
+            throw new Error('Invalid access.');
         if(liked){
             await photoModel.findByIdAndUpdate(photoId, {$pull: {"likes":user._id}, $inc:{likeCount:-1}},{new: true, upsert: true})
             return {liked: false};

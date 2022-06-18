@@ -1,12 +1,13 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
-const URI = process.env.MONGODB_URL;
+const URI = process.env.NODE_ENV=='test'?process.env.MONGODB_URL_TEST:process.env.MONGODB_URL_CLOUD;
 async function connectDb() {
 	try {
 		mongoose.connect(URI, {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
+			dbName:'photoURL'
 		});
 		console.log('Connect database successfully!');
 	} catch (error) {
