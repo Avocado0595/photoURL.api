@@ -3,10 +3,10 @@ import CollectionService from "./collection.service.js";
 
 export default class CollectionController{
     collectionService = new CollectionService();
-    //GET /collections/:_id
+    //GET /collections/:collectionId
     getCollectionById = async(req, res)=>{
         try{
-            const _id = req.params._id;
+            const _id = req.params.collectionId;
             const userId = req.user?.userId;
             const collection = await this.collectionService.getCollectionById(_id, userId);
             return res.status(200).json(createResponse(true,"Get collection successfully.",{collection}));
@@ -43,10 +43,10 @@ export default class CollectionController{
             return res.status(400).json(createResponse(false,err.message,null));
         }
     }
-    //PUT '/:_id'
+    //PUT '/:collectionId'
     updateCollection= async (req,res)=>{
         try{
-            const _id = req.params._id;
+            const _id = req.params.collectionId;
             const userId = req.user.userId;
             const {collectionName, isPrivate} = req.body
             if(!collectionName)
@@ -60,10 +60,10 @@ export default class CollectionController{
     }
     
     
-    //DELETE '/:_id'
+    //DELETE '/:collectionId'
     deleteCollection = async(req, res)=>{
         try{
-            const _id = req.params._id;
+            const _id = req.params.collectionId;
             const userId = req.user.userId;
             const collection = await this.collectionService.deleteCollection(_id, userId);
             return res.status(200).json(createResponse(true,"Delete collection successfully.",{collection}));

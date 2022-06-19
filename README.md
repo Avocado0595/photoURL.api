@@ -1,49 +1,62 @@
-GET /api/collection/=> list collection:
-[
-    {
-        collectionId: 123
-        collectionName: "abc"
-        photoList: [photoId1, photoId2, photoId3]
-    },
-    {
-        collectionId: 111
-        collectionName: "abc12"
-        photoList: [photoId01, photoId02, photoId3]
-    }
-]
+## SUMARY OF PROJECT
 
-GET /api/collection/{id} 
-=> collectionId: 123
-   collectionName: "abc"
-   photoList: [photoId1, photoId2, photoId3]
+### /api/users
 
-/api/profile
+| Method | Endpoint         | Description         |
+|--------|------------------|---------------------|
+| GET    | /:userId         | Get user by id      |
+| POST   | /signup          | Sign up new account |
+| POST   | /login           | Login               |
+| POST   | /new-password    | Forgot password     |
+| PATCH  | /change-password | Change password     |
+| PUT    | /update          | Update user info    |
+| DELETE | /signout         | Sign out            |
 
- **testing with jest
- 1. install : npm i -D jest supertest
+### /api/collections
 
-/api/photo
-POST  '/'                           verifyToken photoController.create
+| Method | Endpoint        | Description               |
+|--------|-----------------|---------------------------|
+| GET    | /:collectionId  | Get collection by id      |
+| GET    | /user/:userId   | Get collection by user id |
+| POST   | /               | Create new collection     |
+| PUT    | /:collectionId  | Update collection         |
+| DELETE | /:collectionId  | Delete collection         |
 
-GET  '/me'                          photoController.getMyPhotoList
-GET  '/user/:userName/'             photoController.getUserPhotoList
 
-GET  '/me/:_id'                     photoController.getMyPhotoById
-GET  '/user/:userName/:photoId'     photoController.getUserPhotoById
+### /api/photos
+| Method | Endpoint                                   | Description                      |
+|--------|--------------------------------------------|----------------------------------|
+| GET    | /user/userId                               | Get photo by user id             |
+| GET    | /collection/:collectionId                  | Get photo by collection id       |
+| GET    | /:photoId                                  | Get photo by id                  |
+| GET    | /[?page=1&limit=10&skip=10&search=keyword] | Get all photo  [by query params] |
+| POST   | /                                          | Create new photo                 |
+| PUT    | /:photoId                                  | Update photo                     |
+| PATCH  | /:photoId/like                             | Trigger like/unlike photo        |
+| DELETE | /:photoId                                  | Delete photo                     |
 
-/api/user
+## ERD
 
-POST    '/auth/signup',             userController.createUser
-POST    '/auth/login',              userController.login
-GET     '/auth/me',                 verifyToken, userController.getMyAccount
-PUT     '/auth/update',             verifyToken, userController.updateUser
-PATCH   '/auth/change_password',    verifyToken, userController.updatePassword
+![erd](./ERD.png)
 
-GET     '/:userName',               verifyToken,userController.getUserByUserName
+## HOW TO CONFIG
+- Clone this project
+- Create .env file
+- Add variables
+```
+MONGODB_URL_CLOUD
+MONGODB_URL_DEV
+MONGODB_URL_TEST
+PORT
+SALT
+NODE_ENV
+SECRET_KEY
+SECRET_KEY_REFRESH
+DB_PASSWORD
+SERVER_EMAIL
+SERVER_EMAIL_PASS
+```
+- npm i
+- npm run dev
 
-/api/collection
-POST    '/',                verifyToken,collectionController.create
-PUT     '/:_id',            verifyToken,collectionController.updateCollection
-GET     '/:_id',            collectionController.getCollectionById
-GET     '/user/:userId',    collectionController.getCollectionListByUser
-
+<div style="text-align: right"> &copy; thanhxuan2022 </div>

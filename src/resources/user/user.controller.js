@@ -102,7 +102,7 @@ export default class UserController{
         try{
             if(!req.user)
                 throw new Error('Invalid session');
-            const _id = req.params._id;
+            const _id = req.params.userId;
             if(!_id)
                 throw new Error('Invalid _id.');
             const user = await this.userService.getUser(_id);
