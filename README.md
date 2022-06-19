@@ -59,4 +59,4 @@ SERVER_EMAIL_PASS
 - npm i
 - npm run dev
 
-<div style="text-align: right"> &copy; thanhxuan2022 </div>
+<div style="text-align: right"> thanhxuan &copy; 2022 </div>
