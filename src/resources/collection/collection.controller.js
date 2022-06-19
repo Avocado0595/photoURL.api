@@ -9,10 +9,12 @@ export default class CollectionController{
             const _id = req.params._id;
             const userId = req.user?.userId;
             const collection = await this.collectionService.getCollectionById(_id, userId);
-            res.status(201).json(createResponse(true,"Get collection successfully.",{collection}));
+            return res.status(200).json(createResponse(true,"Get collection successfully.",{collection}));
         }
         catch(err){
-            res.status(400).json(createResponse(false,err.message,null));
+            if(err.message.includes('Invalid access'))
+                return res.status(403).json(createResponse(false,err.message,null));
+            return res.status(400).json(createResponse(false,err.message,null));
         }
     }
     //GET /collections/user/:userId
@@ -21,10 +23,10 @@ export default class CollectionController{
             const userId = req.params.userId;
             const authorId = req.user?.userId;
             const collectionList = await this.collectionService.getCollectionListByUser(userId, authorId)
-            res.status(201).json(createResponse(true,"Get collection successfully.",{collectionList}));
+            return res.status(200).json(createResponse(true,"Get collection successfully.",{collectionList}));
         }
         catch(err){
-            res.status(400).json(createResponse(false,err.message,null));
+            return res.status(400).json(createResponse(false,err.message,null));
         }
     }
     //POST /collections/
@@ -35,10 +37,10 @@ export default class CollectionController{
             if(collectionName.trim().length >= 125 || collectionName.trim().length <1)
                 throw new Error('Invalid collection name.');
             const collection = await this.collectionService.create({collectionName, userId, isPrivate});
-            res.status(201).json(createResponse(true,"Create new collection successfully.",{collection}));
+            return res.status(201).json(createResponse(true,"Create new collection successfully.",{collection}));
         }
         catch(err){
-            res.status(400).json(createResponse(false,err.message,null));
+            return res.status(400).json(createResponse(false,err.message,null));
         }
     }
     //PUT '/:_id'
@@ -50,10 +52,10 @@ export default class CollectionController{
             if(!collectionName)
                 throw new Error("Data update empty.");
             const collection = await this.collectionService.updateCollection(_id,userId, {collectionName, isPrivate});
-            res.status(201).json(createResponse(true,"Update collection successfully.",{collection}));
+            return res.status(201).json(createResponse(true,"Update collection successfully.",{collection}));
         }
         catch(err){
-            res.status(400).json(createResponse(false,err.message,null));
+            return res.status(400).json(createResponse(false,err.message,null));
         }
     }
     
@@ -64,10 +66,10 @@ export default class CollectionController{
             const _id = req.params._id;
             const userId = req.user.userId;
             const collection = await this.collectionService.deleteCollection(_id, userId);
-            res.status(201).json(createResponse(true,"Delete collection successfully.",{collection}));
+            return res.status(200).json(createResponse(true,"Delete collection successfully.",{collection}));
         }
         catch(err){
-            res.status(400).json(createResponse(false,err.message,null));
+            return res.status(400).json(createResponse(false,err.message,null));
         }
     }
 }

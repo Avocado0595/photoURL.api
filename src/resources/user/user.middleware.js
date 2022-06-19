@@ -33,7 +33,7 @@ async function deserializeUser(req, res, next){
 }
 async function requireUser(req, res, next){
     if(!req.user)
-        return res.status(400).json(createResponse(false,'Unauthorize access.',null));
+        return res.status(403).json(createResponse(false,'Unauthorize access.',null));
     next();
 }
 export {deserializeUser, requireUser};

@@ -65,16 +65,9 @@ export default class UserService{
                 subject: 'Revovery your password in PhotoUrl',
                 html: '<h3>You have got a new message from PhotoUrl.</h3><ul><li>Username:' + userName + '</li><li>Email: ' + email + '</li><li>New password: ' +'<b>'+ newPass +'</b>' + '</li></ul><p>Please use this password to login and change your own password!</p>'
             }
-            transporter.sendMail(mainOptions, async function(err, info){
-                if (err) {
-                    throw new Error(err);
-                } else {
-                    console.log('Message sent: ' +  info.response);
-                    const hashedPassword = await this.passwordHandle.hashPassword(newPass);
-                    await UserModel.findByIdAndUpdate(user._id, {password: hashedPassword},  {new: true});
-                }
-            });
-            
+            transporter.sendMail(mainOptions); 
+            const hashedPassword = await this.passwordHandle.hashPassword(newPass);
+            await UserModel.findByIdAndUpdate(user._id, {password: hashedPassword},  {new: true});
             return {result: 'ok'};
     }
     getUser = async (_id)=>{

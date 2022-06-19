@@ -47,6 +47,7 @@ export default class PhotoService{
         const searchParams = search&&{$text: {$search: search}};
         const rawPhotoList = await photoModel.find({...searchParams})
                     .populate({path: 'collectionId',select: "_id collectionName"})
+                    .sort({likeCount:1})
                     .populate({path:'userId', select:"_id userName"})
                     .limit(limit).skip((page-1)*skip);
         const photoList = rawPhotoList.filter(p=>{

@@ -1,5 +1,4 @@
-GET /api/collection/
-=> list collection:
+GET /api/collection/=> list collection:
 [
     {
         collectionId: 123
@@ -48,42 +47,3 @@ PUT     '/:_id',            verifyToken,collectionController.updateCollection
 GET     '/:_id',            collectionController.getCollectionById
 GET     '/user/:userId',    collectionController.getCollectionListByUser
 
-
-*send token:
-res.cookie('token', token, {
-    httpOnly: true,
-    maxAge: 3000
-});
-res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    maxAge: 1month
-});
-
-logout:
-res.cookie('token', '', {
-    httpOnly: true,
-    maxAge: 0
-});
-res.cookie('refreshToken', '', {
-    httpOnly: true,
-    maxAge: 0
-});
-
-verifyToken:
-
-const {payload, expired} = verify(token);
-consr refresh = expired&& refreshToken ? verify(refreshToken) : null;
-
-if(!refresh){
-    next()
-}
-const session = getSession(refresh.sessionId)
-******
-getSession(sessionId){
-    const session = sessions[sessionId];
-    return session && session.valid ? session : null
-}
-******
-
-
-const new Acc

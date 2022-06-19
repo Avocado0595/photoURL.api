@@ -49,7 +49,7 @@ export default class UserController{
             this.validate.checkPassword(password);
             const {user, accessToken, refreshToken}  = await this.userService.login({userName, password});
             this.setCookie(res, accessToken, refreshToken);
-            return res.status(200).json(createResponse(true,"Login successfully.",{user}));
+            return res.status(201).json(createResponse(true,"Login successfully.",{user}));
         }
         catch(err){
             return res.status(400).json(createResponse(false,err.message,null));
@@ -64,7 +64,7 @@ export default class UserController{
                 this.validate.checkDisplayName(updateData.displayName);
             }
             const updateUser = await this.userService.updateUser(userId, updateData);
-            return res.status(200).json(createResponse(true,"Update user successfully.",{user: updateUser}));
+            return res.status(201).json(createResponse(true,"Update user successfully.",{user: updateUser}));
         }
         catch(err){
             return res.status(401).json(createResponse(false,err.message,null))
@@ -78,10 +78,10 @@ export default class UserController{
             this.validate.checkPassword(newPassword);
             this.validate.checkPassword(oldPassword);
             const updateResult = await this.userService.updatePassword(userId,oldPassword, newPassword)
-            res.status(200).json(createResponse(true, 'Update password successfully', updateResult));
+            return res.status(200).json(createResponse(true, 'Update password successfully', updateResult));
         }
         catch(err){
-            res.status(401).json(createResponse(false,err.message, null))
+            return res.status(401).json(createResponse(false,err.message, null))
         }
     }
     //GET /users/new-pasword
@@ -91,10 +91,10 @@ export default class UserController{
             this.validate.checkUsername(userName);
             this.validate.checkEmail(email);
             const result = await this.userService.getNewPassword({userName, email});
-            res.status(200).json(createResponse(true, 'Get new password successfully', {result}));
+            return res.status(201).json(createResponse(true, 'Get new password successfully', {result}));
         }
         catch(err){
-            res.status(400).json(createResponse(false,err.message, null))
+            return res.status(400).json(createResponse(false,err.message, null))
         }
     }
     //GET /users/profile/:_id
@@ -106,10 +106,10 @@ export default class UserController{
             if(!_id)
                 throw new Error('Invalid _id.');
             const user = await this.userService.getUser(_id);
-            res.status(200).json(createResponse(true, 'Get user successfully', {user}));
+            return res.status(200).json(createResponse(true, 'Get user successfully', {user}));
         }
         catch(err){
-            res.status(401).json(createResponse(false,err.message, null))
+            return res.status(401).json(createResponse(false,err.message, null))
         }
     }
 }

@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch ./src --watch server.js --inspect server.js",
+    "dev": "set NODE_ENV=dev&nodemon --watch ./src --watch server.js --inspect server.js",
     "test": "set NODE_ENV=test&node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",
     "start": "node server.js"
   },

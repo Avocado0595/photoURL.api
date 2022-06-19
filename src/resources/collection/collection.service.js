@@ -1,4 +1,5 @@
 import collectionModel from './collection.model.js';
+import photoModel from '../photo/photo.model.js';
 export default class CollectionService{
     getCollectionById = async(_id, userId)=>{
         const collection = await collectionModel.findById(_id)
@@ -54,6 +55,7 @@ export default class CollectionService{
         const delItem = await collectionModel.findOneAndDelete({_id, userId});
         if(!delItem)
             throw new Error('Collection not found for delete.');
+        await photoModel.deleteMany({collectionId: delItem._id})
         return delItem;
     }
     

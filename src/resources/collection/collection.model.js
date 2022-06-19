@@ -4,8 +4,7 @@ const schema = new mongoose.Schema(
     {
         collectionName:{
             type: String,
-            require: true,
-            unique: true
+            require: true
         },
         userId:{
             type: mongoose.Schema.Types.ObjectId,
