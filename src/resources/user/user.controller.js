@@ -9,7 +9,7 @@ export default class UserController{
     }
     setCookie = (res,accessToken,refreshToken)=>{
         res.cookie("accessToken",accessToken, {httpOnly: true, sameSite: 'strict', maxAge: 300000});
-        res.cookie("refreshToken", refreshToken, {httpOnly: true, sameSite: 'strict', maxAge: 24*60*7*10000});
+        res.cookie("refreshToken", refreshToken, {httpOnly: true, sameSite: 'strict', maxAge: 24*60*7*1000});
     }
     //POST /users/signup
     createUser = async(req, res)=>{   

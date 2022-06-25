@@ -47,28 +47,28 @@ export default class UserService{
     getNewPassword = async ({userName, email}) =>{
         const user = await UserModel.findOne({userName,email});
         if(!user)
-            throw new Error('User or Email not found.');
-            var transporter =  nodemailer.createTransport({ // config mail server
-                service: 'Gmail',
-                auth: {
-                    user: process.env.SERVER_EMAIL,
-                    pass: process.env.SERVER_EMAIL_PASS
-                }
-            });
-            const newPass = generatorPass.generate({
-                length: 8,
-                numbers: true
-            });
-            var mainOptions = {
-                from: process.env.SERVER_EMAIL,
-                to: email,
-                subject: 'Revovery your password in PhotoUrl',
-                html: '<h3>You have got a new message from PhotoUrl.</h3><ul><li>Username:' + userName + '</li><li>Email: ' + email + '</li><li>New password: ' +'<b>'+ newPass +'</b>' + '</li></ul><p>Please use this password to login and change your own password!</p>'
+        throw new Error('User or Email not found.');
+        const transporter =  nodemailer.createTransport({ // config mail server
+            service: 'Gmail',
+            auth: {
+                user: process.env.SERVER_EMAIL,
+                pass: process.env.SERVER_EMAIL_PASS
             }
-            transporter.sendMail(mainOptions); 
-            const hashedPassword = await this.passwordHandle.hashPassword(newPass);
-            await UserModel.findByIdAndUpdate(user._id, {password: hashedPassword},  {new: true});
-            return {result: 'ok'};
+        });
+        const newPass = generatorPass.generate({
+            length: 8,
+            numbers: true
+        });
+        const mainOptions = {
+            from: process.env.SERVER_EMAIL,
+            to: email,
+            subject: 'Revovery your password in PhotoUrl',
+            html: '<h3>You have got a new message from PhotoUrl.</h3><ul><li>Username:' + userName + '</li><li>Email: ' + email + '</li><li>New password: ' +'<b>'+ newPass +'</b>' + '</li></ul><p>Please use this password to login and change your own password!</p>'
+        }
+        const hashedPassword = await this.passwordHandle.hashPassword(newPass);
+        await UserModel.findByIdAndUpdate(user._id, {password: hashedPassword},  {new: true});
+        await transporter.sendMail(mainOptions); 
+        return {result: 'ok'};
     }
     getUser = async (_id)=>{
         const user = await UserModel.findById(_id);
@@ -90,7 +90,7 @@ export default class UserService{
         }
         const isDuplicatePassword = await this.passwordHandle.comparePassword(newPassword, user.password);
         if(isDuplicatePassword)
-            throw new Error('New password is the same with old password.')
+            throw new Error('New password is the same with old password.Please choose another password')
         const hashedPassword = await this.passwordHandle.hashPassword(newPassword);
         const updateUser = await UserModel.findByIdAndUpdate(_id, {password: hashedPassword},  {new: true});
         return updateUser?true:false;
