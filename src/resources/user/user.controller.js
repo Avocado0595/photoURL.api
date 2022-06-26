@@ -2,6 +2,8 @@
 import { Validate } from './user.helper.js';
 import createResponse from '../../utils/response.ulti.js';
 import UserService from './user.service.js';
+import path from 'path';
+import Resize from '../../utils/resize-image.js'; 
 export default class UserController{
     constructor(){
         this.userService = new UserService();
@@ -106,11 +108,33 @@ export default class UserController{
             if(!_id)
                 throw new Error('Invalid _id.');
             const user = await this.userService.getUser(_id);
+
             return res.status(200).json(createResponse(true, 'Get user successfully', {user}));
         }
         catch(err){
             return res.status(401).json(createResponse(false,err.message, null))
         }
+    }
+
+    //UPDATE /users/update-avatar
+    updateAvatar = async(req, res)=>{
+        try{
+            if(!req.user)
+                throw new Error('Invalid session');
+            const userId = req.user.userId;
+            const imagePath = path.join(path.resolve(), '/public/avatars');
+            const fileUpload = new Resize(imagePath);
+            if (!req.file) {
+                res.status(400).json(createResponse(false,'Please provide an image.', null));
+            }
+            const avatarPath = await fileUpload.save(req.file.buffer);
+            await this.userService.updateAvatar(userId,avatarPath)
+            return res.status(201).json({avatarPath });
+        }
+        catch(err){
+            return res.status(401).json(createResponse(false,err.message, null))
+        }
+        
     }
 }
 

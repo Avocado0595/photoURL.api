@@ -8,8 +8,9 @@
 | POST   | /signup          | Sign up new account |
 | POST   | /login           | Login               |
 | POST   | /new-password    | Forgot password     |
-| PATCH  | /change-password | Change password     |
-| PUT    | /update          | Update user info    |
+| PATCH  | /update-password | Change password     |
+| PATCH  | /update-info     | Update user info    |
+| PUT    | /update-avatar   | Update user avatar  |
 | DELETE | /signout         | Sign out            |
 
 ### /api/collections
