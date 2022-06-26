@@ -90,9 +90,15 @@ export default class UserService{
         }
         const isDuplicatePassword = await this.passwordHandle.comparePassword(newPassword, user.password);
         if(isDuplicatePassword)
-            throw new Error('New password is the same with old password.Please choose another password')
+            throw new Error('New password is the same with old password.Please choose another password');
         const hashedPassword = await this.passwordHandle.hashPassword(newPassword);
         const updateUser = await UserModel.findByIdAndUpdate(_id, {password: hashedPassword},  {new: true});
         return updateUser?true:false;
+    }
+    updateAvatar = async(userId,avatarPath)=>{
+        const update = await UserModel.findByIdAndUpdate(userId, {avatarPath}, {new: true});
+        if(!update)
+            throw new Error('User not found.');
+        return;
     }
 }
